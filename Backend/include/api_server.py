@@ -32,6 +32,15 @@ class SocketAPI:
                     return jsonify({'error': 'No data found'}), 404
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
+            
+        @self.app.route('/last_24', methods=['GET'])
+        def get_last_24():
+            try:
+                records = self.dp.get_last_24h_records(self.db_path)
+                return jsonify(records), 200
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
+
 
     def run(self, host='0.0.0.0', port=5000):
         self.app.run(host=host, port=port)

@@ -1,5 +1,5 @@
 import sqlite3
-import sqlite3
+from datetime import datetime, timedelta
 
 class DataProcess:
     def __init__(self):
@@ -149,6 +149,39 @@ class DataProcess:
         except sqlite3.Error as e:
             print(f"Erreur SQLite: {e}")
             return []
+        
+    def get_last_24h_records(self, db_path='data.db'):
+        try:
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            # Heure actuelle et il y a 24h
+            now = datetime.now()
+            last_24h = now - timedelta(hours=24)
+
+            # Format texte compatible avec les champs 'date' et 'time'
+            date_str = last_24h.strftime('%Y/%m/%d')
+            time_str = last_24h.strftime('%H:%M:%S')
+
+            # Récupérer les enregistrements récents
+            cursor.execute('''
+                SELECT * FROM records
+                WHERE
+                    date > ?
+                    OR (date = ? AND time >= ?)
+                ORDER BY date ASC, time ASC
+            ''', (date_str, date_str, time_str))
+
+            rows = cursor.fetchall()
+            conn.close()
+
+            return [dict(row) for row in rows]
+
+        except sqlite3.Error as e:
+            print(f"[SQLite Error] {e}")
+            return []
+
 
 
 
